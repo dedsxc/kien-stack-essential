@@ -1,0 +1,81 @@
+// Renovate config for kien/stack Essential (and your fork).
+// Works with the Mend Renovate GitHub App (just install it on your fork)
+// or with the self-hosted workflow .github/workflows/renovate.yaml (needs secret RENOVATE_TOKEN).
+// See docs/CI.md.
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
+    'helpers:pinGitHubActionDigests',
+    ':semanticCommits',
+  ],
+  timezone: 'Europe/Paris',
+  schedule: ['before 6am on monday'],
+  dependencyDashboard: true,
+  labels: ['renovate'],
+  prConcurrentLimit: 10,
+  // Conservative: nothing merges unless CI (charts-test) is green; Renovate waits for checks.
+  platformAutomerge: true,
+  ignorePaths: ['**/charts/**'],
+  // helmv3 manager picks up Chart.yaml dependencies by default (this includes argo-cd: install.sh
+  // helm_bootstrap installs helm/platform/argocd, so its version is only pinned in that Chart.yaml).
+  'helm-values': {
+    managerFilePatterns: ['/(^|/)helm/.+/values\\.ya?ml$/'],
+  },
+  customManagers: [
+    {
+      // Tool versions pinned in workflows / scripts:  # renovate: datasource=github-releases depName=yannh/kubeconform
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^\\.github/workflows/.+\\.ya?ml$/',
+        '/^hack/.+\\.sh$/',
+        '/^install\\.sh$/',
+      ],
+      matchStrings: [
+        '# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( registryUrl=(?<registryUrl>\\S+))?\\s*\\n\\s*[A-Za-z0-9_-]+\\s*[:=]\\s*["\']?v?(?<currentValue>[^"\'\\s]+)["\']?',
+      ],
+    },
+  ],
+  packageRules: [
+    {
+      description: 'Platform charts: one PR per brick for minor+patch',
+      matchManagers: ['helmv3', 'helm-values'],
+      matchFileNames: ['helm/platform/**'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: '{{parentDir}} (platform)',
+      addLabels: ['platform'],
+    },
+    {
+      description: 'Apps: one PR per app for minor+patch',
+      matchManagers: ['helmv3', 'helm-values'],
+      matchFileNames: ['helm/apps/**'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: '{{parentDir}} (app)',
+      addLabels: ['apps'],
+    },
+    {
+      description: 'Major updates: always reviewed by a human',
+      matchUpdateTypes: ['major'],
+      addLabels: ['major'],
+      automerge: false,
+    },
+    {
+      description: 'Patch updates of charts/images: automerge once CI is green. Set automerge=false to disable.',
+      matchManagers: ['helmv3', 'helm-values'],
+      matchUpdateTypes: ['patch'],
+      automerge: false, // conservative default: flip to true in your fork if you trust the CI
+    },
+    {
+      description: 'ArgoCD is the bootstrap brick (install.sh helm_bootstrap): never automerge',
+      matchPackageNames: ['argo-cd', 'cilium'],
+      automerge: false,
+      addLabels: ['bootstrap'],
+    },
+    {
+      description: 'GitHub Actions + CI tools: grouped, digest/patch automerged',
+      matchManagers: ['github-actions', 'custom.regex'],
+      groupName: 'ci tooling',
+      addLabels: ['ci'],
+    },
+  ],
+}

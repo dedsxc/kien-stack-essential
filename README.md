@@ -39,6 +39,13 @@ No cluster? [k3s](https://docs.k3s.io/quick-start) in one minute:
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik" sh -
 ```
 
+## CI and updates
+
+Every PR is linted and the changed charts are rendered, validated (kubeconform) and installed in a
+kind cluster (`.github/workflows/charts-test.yaml`). Renovate keeps the upstream charts and images
+up to date with weekly PRs, in this repo and in your fork (Renovate GitHub App, or the self-hosted
+workflow with a `RENOVATE_TOKEN` secret). Details: [docs/CI.md](docs/CI.md).
+
 ## How the repo is organised
 
 ```

@@ -1,0 +1,7 @@
+extends: relaxed
+ignore: |
+  **/charts/
+  **/templates/
+rules:
+  line-length: disable
+  truthy: disable

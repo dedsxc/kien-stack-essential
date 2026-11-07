@@ -1,0 +1,18 @@
+platform:
+  - changed-files:
+      - any-glob-to-any-file: helm/platform/**
+apps:
+  - changed-files:
+      - any-glob-to-any-file: helm/apps/**
+argocd:
+  - changed-files:
+      - any-glob-to-any-file: argocd/**
+ci:
+  - changed-files:
+      - any-glob-to-any-file: [.github/**, hack/**, ct.yaml, .yamllint.yaml]
+docs:
+  - changed-files:
+      - any-glob-to-any-file: [docs/**, README.md]
+installer:
+  - changed-files:
+      - any-glob-to-any-file: install.sh

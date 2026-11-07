@@ -1,0 +1,162 @@
+---
+name: "Charts: test"
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: charts-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # renovate: datasource=github-releases depName=yannh/kubeconform
+  KUBECONFORM_VERSION: "0.7.0"
+  # renovate: datasource=github-releases depName=helm/helm
+  HELM_VERSION: "v3.19.0"
+
+jobs:
+  changes:
+    name: Changed charts
+    runs-on: ubuntu-latest
+    outputs:
+      charts: ${{ steps.list.outputs.charts }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: List changed charts
+        id: list
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          all=$(find helm/platform helm/apps -mindepth 1 -maxdepth 1 -type d | sort)
+          if [ "$EVENT" = "pull_request" ]; then
+            files=$(git diff --name-only "origin/$BASE_REF...HEAD")
+          else
+            files=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo ALL)
+          fi
+          # Shared inputs (CI, cluster.yaml, ct config) => test every chart.
+          if [ "$files" = ALL ] || grep -qE '^(cluster\.yaml|ct\.yaml|hack/|\.github/workflows/charts-test\.yaml)' <<<"$files"; then
+            charts="$all"
+          else
+            charts=$(grep -oE '^helm/(platform|apps)/[^/]+' <<<"$files" | sort -u || true)
+          fi
+          echo "$charts"
+          echo "charts=$(jq -R -s -c 'split("\n") | map(select(length > 0))' <<<"$charts")" >> "$GITHUB_OUTPUT"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+        with:
+          version: ${{ env.HELM_VERSION }}
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - uses: helm/chart-testing-action@720270857a28afd41e2426521a7801db09e9b510 # v2.9.0
+      - name: Install kubeconform
+        run: |
+          curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin kubeconform
+      - name: yamllint
+        run: yamllint -c .yamllint.yaml .
+      - name: helm lint
+        run: |
+          set -euo pipefail
+          for d in helm/platform/*/ helm/apps/*/; do
+            helm dependency build "$d" >/dev/null 2>&1 || helm dependency update "$d" >/dev/null
+            helm lint "$d" -f cluster.yaml
+          done
+      - name: ct lint (changed charts)
+        run: ct lint --config ct.yaml --lint-conf .yamllint.yaml --helm-lint-extra-args "-f cluster.yaml"
+      - name: kubeconform (hack/validate.sh)
+        run: bash hack/validate.sh
+
+  install:
+    name: Install ${{ matrix.chart }}
+    needs: changes
+    if: needs.changes.outputs.charts != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        chart: ${{ fromJSON(needs.changes.outputs.charts) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+        with:
+          version: ${{ env.HELM_VERSION }}
+      - name: Install kubeconform
+        run: |
+          curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin kubeconform
+      - name: Mode
+        id: mode
+        env:
+          CHART: ${{ matrix.chart }}
+        run: |
+          # Charts that need a real cluster bootstrap (CNI, CRD + CR in the same release, external
+          # providers) are rendered and schema-checked; the others are really installed in kind.
+          case "$(basename "$CHART")" in
+            cilium|cert-manager|external-secrets|external-dns|infisical|argocd) echo "mode=template" >> "$GITHUB_OUTPUT" ;;
+            *) echo "mode=install" >> "$GITHUB_OUTPUT" ;;
+          esac
+      - name: helm dependency build
+        run: helm dependency build "${{ matrix.chart }}" || helm dependency update "${{ matrix.chart }}"
+      - name: Template + kubeconform
+        env:
+          CHART: ${{ matrix.chart }}
+        run: |
+          set -euo pipefail
+          n=$(basename "$CHART")
+          helm template "$n" "$CHART" -n "$n" -f cluster.yaml --include-crds \
+            | kubeconform -strict -summary -ignore-missing-schemas -kubernetes-version 1.33.0 \
+                -schema-location default \
+                -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+      - name: Create kind cluster
+        if: steps.mode.outputs.mode == 'install'
+        uses: helm/kind-action@ea822c7bf1874f08e5a491df991c228edffc3376 # v1.15.2
+      - name: helm install (kind)
+        if: steps.mode.outputs.mode == 'install'
+        env:
+          CHART: ${{ matrix.chart }}
+        run: |
+          set -euo pipefail
+          n=$(basename "$CHART")
+          # kind has no load balancer and no openebs storage class
+          helm upgrade --install "$n" "$CHART" -n "$n" --create-namespace -f cluster.yaml \
+            --set traefik.service.spec.type=NodePort --set global.storageClass=standard \
+            --wait --timeout 5m
+          kubectl get pods -n "$n"
+      - name: Debug on failure
+        if: failure() && steps.mode.outputs.mode == 'install'
+        run: |
+          kubectl get pods -A || true
+          kubectl get events -A --sort-by=.lastTimestamp | tail -50 || true
+
+  result:
+    # Single required check for branch protection / Renovate automerge.
+    name: Charts test result
+    if: always()
+    needs: [lint, install]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check
+        env:
+          LINT: ${{ needs.lint.result }}
+          INSTALL: ${{ needs.install.result }}
+        run: |
+          echo "lint=$LINT install=$INSTALL"
+          [ "$LINT" = success ] && { [ "$INSTALL" = success ] || [ "$INSTALL" = skipped ]; }
