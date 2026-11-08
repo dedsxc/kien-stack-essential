@@ -1,0 +1,18 @@
+# Rebuilds shop.kien.cc when a release is published, so /changelog shows it.
+# Needs the repo secret SHOP_DEPLOY_HOOK (Cloudflare Workers Builds deploy hook URL).
+name: site-changelog
+on:
+  release:
+    types: [published, edited, deleted]
+  workflow_dispatch: {}
+permissions: {}
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger site rebuild
+        env:
+          HOOK: ${{ secrets.SHOP_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "SHOP_DEPLOY_HOOK not set, skipping"; exit 0; fi
+          curl -fsS -X POST "$HOOK"
