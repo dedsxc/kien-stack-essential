@@ -135,9 +135,6 @@ gen_values() {
     .global.issuer = strenv(ISSUER) |
     .global.ingressClass = (load(strenv(V)).ingress.className // "traefik") |
     .global.storageClass = (load(strenv(V)).storageClass // "") |
-    # cnpg-cluster chart (app Postgres): it has no global.storageClass, default openebs-hostpath
-    (select((load(strenv(V)).storageClass // "") != "") | ."cnpg-cluster".cluster.storage.storageClass = load(strenv(V)).storageClass |
-      ."cnpg-cluster".cluster.walStorage.storageClass = load(strenv(V)).storageClass) // . |
     .global.tls = load(strenv(V)).tls | .global.secrets = load(strenv(V)).secrets |
     .traefik.service.spec.type = (load(strenv(V)).ingress.serviceType // "LoadBalancer") |
     .ciliumLB = (load(strenv(V)).ingress.ciliumLB // {"enabled": false}) |

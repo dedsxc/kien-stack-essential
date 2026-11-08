@@ -50,7 +50,9 @@ declared with the [cnpg-cluster](https://github.com/dedsxc/labs/tree/main/helm/c
 - Secret `<app>-cnpg` with `username`, `password`, `DB_HOST`, `DB_DATABASE`, `DB_CONNECTION_URI`:
   the password comes from External Secrets (`ClusterGenerator` `password-cluster-generator`, in the
   `external-secrets` brick), never from Git.
-- Volumes: `storageClass` of your `stack.yaml` (default `openebs-hostpath`).
+- Volumes: `openebs-hostpath` (chart default, installed by Essential). With `storage.provider: none`
+  (cloud StorageClass), set it in each brick with a database, e.g. `helm/platform/infisical/values.yaml`:
+  `cnpg-cluster.cluster.storage.storageClass` and `cnpg-cluster.cluster.walStorage.storageClass`.
 
 Same pattern for your own apps: add `cnpg-cluster` to `helm/apps/<app>/Chart.yaml` and read `<app>-cnpg`.
 
