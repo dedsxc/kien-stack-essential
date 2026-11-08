@@ -46,6 +46,7 @@ Every PR is linted and the changed charts are rendered, validated (kubeconform) 
 kind cluster (`.github/workflows/charts-test.yaml`). Renovate keeps the upstream charts and images
 up to date with weekly PRs, in this repo and in your fork (Renovate GitHub App, or the self-hosted
 workflow with a `RENOVATE_TOKEN` secret). Details: [docs/CI.md](docs/CI.md).
+Releases and changelog: [GitHub releases](https://github.com/dedsxc/kien-stack-essential/releases).
 
 ## How the repo is organised
 
