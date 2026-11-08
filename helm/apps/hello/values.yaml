@@ -1,4 +1,4 @@
-# global.domain / global.issuer / global.ingressClass are injected by ArgoCD (from stack.yaml).
+# global.domain / global.issuer come from /cluster.yaml (ArgoCD valueFiles).
 app-template:
   controller:
     containers:

@@ -1,4 +1,4 @@
-# The only thing install.sh applies.
+# Root Application. install.sh applies this file as is; repoURL/targetRevision = your fork.
 # Watches argocd/applications (kustomize): AppProjects + ApplicationSets.
 apiVersion: argoproj.io/v1alpha1
 kind: Application

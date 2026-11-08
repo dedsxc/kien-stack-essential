@@ -59,17 +59,33 @@ argocd/
 helm/
   platform/<brick>/             Helm chart: Chart.yaml (upstream chart as dependency), values.yaml, templates/
   apps/<your-app>/              your apps (see helm/apps/hello, based on app-template)
-cluster.yaml                    settings read by every chart (global.domain, global.issuer...)
-stack.example.yaml              installer answers (domain, TLS, Git repo...)
+cluster.yaml                    YOUR settings, passed to every chart (global.domain, TLS, traefik...)
+install.sh                      one-time bootstrap: secrets, ArgoCD (Helm), kubectl apply argocd/app-of-apps.yaml
 ```
 
 Plain ArgoCD YAML, no templating on the ArgoCD side. Exceptions (namespace, sync options) live in the
 `templatePatch` of each ApplicationSet. Optional bricks (`cilium`, `external-dns`) are excluded in
 `applications/platform/appset.yaml`: remove the `exclude` line to enable them.
 
-`install.sh` installs ArgoCD once with Helm (`helm/platform/argocd`), then applies `app-of-apps`. It injects
-your repo URL, branch and settings (from `stack.yaml`) into the ApplicationSets as a kustomize patch,
-so the files in Git stay generic.
+No hidden configuration: what is in Git is what runs.
+
+- `cluster.yaml` -> every Application gets `valueFiles: [values.yaml, ../../../cluster.yaml]`
+  (in `argocd/applications/*/appset.yaml`), so `global.domain: acme.com` gives `argocd.acme.com`.
+- `argocd/app-of-apps.yaml` and the two `appset.yaml` hold your repo URL and branch.
+- `install.sh` runs once: it creates the root secrets, installs ArgoCD with Helm
+  (`helm/platform/argocd` + `cluster.yaml`, the same release ArgoCD then manages), and applies
+  `argocd/app-of-apps.yaml` as committed. After that, you push and ArgoCD applies.
+
+[`shop.kien.cc/install.sh`](https://shop.kien.cc/install.sh) asks a few questions, writes the answers
+into these files in your fork, commits, pushes, then runs `install.sh`. You can also edit them by hand:
+
+```bash
+git clone https://github.com/<you>/<your-fork> && cd <your-fork>
+# 1. cluster.yaml: global.domain, global.tls...
+# 2. argocd/app-of-apps.yaml + argocd/applications/*/appset.yaml: your repo URL
+git commit -am "my settings" && git push
+./install.sh doctor && ./install.sh
+```
 
 ### Add your own ApplicationSet
 
@@ -92,7 +108,7 @@ ArgoCD creates the `my-site` Application in the `my-site` namespace. Delete the 
 - Add a brick: create `helm/platform/<brick>/` (namespace = folder name, or add an exception in `templatePatch`).
 
 Private repo: set `GIT_USERNAME` / `GIT_TOKEN` when installing.
-Validate offline: `bash hack/validate.sh stack.yaml` (helm template + kubeconform on every chart).
+Validate offline: `bash hack/validate.sh` (helm template + kubeconform on every chart).
 
 ## Paid packs
 

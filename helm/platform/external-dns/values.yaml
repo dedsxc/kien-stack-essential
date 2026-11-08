@@ -1,5 +1,14 @@
+# Provider and domain: set them in /cluster.yaml (external-dns.provider.name, external-dns.domainFilters).
+# API token: secret external-dns/external-dns-api-token (install.sh creates it from EXTERNAL_DNS_API_TOKEN).
 external-dns:
   sources:
     - ingress
   policy: upsert-only
   txtOwnerId: kien-stack
+  env:
+    - name: CF_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: external-dns-api-token
+          key: api-token
+          optional: true

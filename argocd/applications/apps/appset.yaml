@@ -1,5 +1,5 @@
 # One Application per folder in helm/apps/ (your apps): add helm/apps/<name>/, push, done.
-# install.sh sets repoURL/revision and global values (domain, TLS...) from your stack.yaml.
+# repoURL/revision: your fork (same as argocd/app-of-apps.yaml). Values: values.yaml + /cluster.yaml.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:

@@ -1,16 +1,14 @@
-# cluster.yaml: defaults read by every chart (helm/platform/* and helm/apps/*).
-# install.sh overrides global.* and the per-brick keys below from your stack.yaml (domain, TLS...):
-# change those in stack.yaml and re-run install.sh. Anything else can be set here: edit + push.
+# cluster.yaml: YOUR settings. ArgoCD passes this file to every chart (helm/platform/* and helm/apps/*)
+# after its own values.yaml (see valueFiles in argocd/applications/*/appset.yaml). Edit, push, done.
+# https://shop.kien.cc/install.sh fills it in for you on the first install.
 global:
-  # Apps get <name>.example.com
+  # Apps get <name>.<domain>, e.g. argocd.example.com. No domain? <node-ip>.sslip.io
   domain: example.com
-  # ClusterIssuer for Ingresses: selfsigned-ca | letsencrypt
+  # ClusterIssuer used by the Ingresses: selfsigned-ca | letsencrypt
   issuer: selfsigned-ca
   ingressClass: traefik
-  # Empty = cluster default
-  storageClass: openebs-hostpath
   tls:
-    # selfsigned | letsencrypt-http01 | letsencrypt-dns01
+    # selfsigned | letsencrypt-http01 | letsencrypt-dns01 (then issuer: letsencrypt)
     issuer: selfsigned
     email: admin@example.com
     staging: false
@@ -19,7 +17,7 @@ global:
       secretName: dns01-api-token
       secretKey: api-token
   secrets:
-    # infisical: ClusterSecretStore for External Secrets
+    # none | infisical (creates the ClusterSecretStore "infisical" for External Secrets)
     provider: none
     infisical:
       hostAPI: https://app.infisical.com
@@ -27,14 +25,39 @@ global:
       environmentSlug: prod
       credentialsSecret: infisical-universal-auth
 
-# Per-brick overrides (key = upstream chart name). Examples:
+# Per-brick settings (key = upstream chart name, same as in helm/platform/<brick>/values.yaml).
 traefik:
   service:
     spec:
-      # NodePort if your cluster has no load balancer
+      # LoadBalancer (cloud, k3s, minikube tunnel, Cilium L2) | NodePort
       type: LoadBalancer
+  # NodePort only: the IP your browser uses to reach the node
+  # providers:
+  #   kubernetesIngress:
+  #     publishedService: {enabled: false}
+  #     ingressEndpoint: {ip: 192.168.1.10}
+
+# OpenEBS hostpath as the default StorageClass (cluster without one)
+# openebs:
+#   localpv-provisioner:
+#     hostpathClass:
+#       isDefaultClass: true
+
+# Cilium (enable helm/platform/cilium in argocd/applications/platform/appset.yaml first)
 # cilium:
 #   k8sServiceHost: 192.168.1.10
+#   k8sServicePort: 6443
+#   ipam:
+#     mode: cluster-pool
+#     operator:
+#       clusterPoolIPv4PodCIDRList: [10.42.0.0/16]
+# Homelab L2 load balancer IPs (needs Cilium)
+# ciliumLB:
+#   enabled: true
+#   start: 192.168.1.240
+#   stop: 192.168.1.250
+
+# external-dns (enable helm/platform/external-dns first; token: EXTERNAL_DNS_API_TOKEN at install)
 # external-dns:
 #   provider:
 #     name: cloudflare
