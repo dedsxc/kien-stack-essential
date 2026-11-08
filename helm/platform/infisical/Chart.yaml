@@ -2,8 +2,12 @@ apiVersion: v2
 name: infisical
 description: kien/stack infisical (wraps the upstream chart)
 type: application
-version: 0.1.0
+version: 0.2.0
 dependencies:
   - name: infisical-standalone
     repository: https://dl.cloudsmith.io/public/infisical/helm-charts/helm/charts/
     version: 1.12.0
+  # Postgres (CloudNativePG Cluster + Database + generated credentials), Kien's chart
+  - name: cnpg-cluster
+    repository: oci://ghcr.io/dedsxc
+    version: 5.0.0

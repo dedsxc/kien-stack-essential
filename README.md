@@ -10,8 +10,9 @@ ArgoCD deploys and manages everything from your Git repo.
 | cert-manager | TLS: self-signed CA or Let's Encrypt (HTTP-01 / DNS-01) |
 | external-dns | DNS records (only if `dns.provider` is set) |
 | External Secrets + Infisical | Secrets out of Git (self-hosted Infisical on CloudNativePG + Valkey) |
-| CloudNativePG | PostgreSQL operator |
+| CloudNativePG | PostgreSQL operator; each app gets its own small cluster via the [cnpg-cluster](https://github.com/dedsxc/labs/tree/main/helm/cnpg-cluster) chart |
 | metrics-server | `kubectl top`, HPA |
+| Reloader | Restarts workloads annotated `reloader.stakater.com/auto: "true"` when their ConfigMap/Secret changes |
 | OpenEBS hostpath (option) | Local volumes for k3s / bare metal |
 | Cilium (option) | eBPF CNI, kube-proxy replacement, L2 load balancer for homelabs |
 

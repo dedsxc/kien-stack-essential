@@ -1,0 +1,29 @@
+# Stakater Reloader: rolling restart of a Deployment/StatefulSet when a ConfigMap or Secret it uses changes.
+# Opt-in per workload with the annotation reloader.stakater.com/auto: "true" (e.g. litellm).
+reloader:
+  reloader:
+    watchGlobally: true
+    deployment:
+      resources:
+        requests:
+          cpu: 10m
+          memory: 64Mi
+        limits:
+          memory: 256Mi
+# global.* comes from /cluster.yaml (passed to every chart by the ApplicationSets). Defaults:
+global:
+  domain: example.com
+  issuer: selfsigned-ca
+  ingressClass: traefik
+  storageClass: ""
+  tls:
+    issuer: selfsigned
+    email: ""
+    staging: false
+    dns01:
+      provider: cloudflare
+      secretName: dns01-api-token
+      secretKey: api-token
+  secrets:
+    provider: none
+    infisical: {}
