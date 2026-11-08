@@ -3,20 +3,3 @@ external-dns:
     - ingress
   policy: upsert-only
   txtOwnerId: kien-stack
-# global.* comes from /cluster.yaml (passed to every chart by the ApplicationSets). Defaults:
-global:
-  domain: example.com
-  issuer: selfsigned-ca
-  ingressClass: traefik
-  storageClass: ""
-  tls:
-    issuer: selfsigned
-    email: ""
-    staging: false
-    dns01:
-      provider: cloudflare
-      secretName: dns01-api-token
-      secretKey: api-token
-  secrets:
-    provider: none
-    infisical: {}
