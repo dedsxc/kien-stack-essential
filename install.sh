@@ -47,7 +47,7 @@ rev()  { yq -r '.spec.source.targetRevision' "$APP"; }
 # macOS has no `timeout` nor `base64 -w0` (GNU): portable equivalents
 run_timeout() { local t=$1; shift; if command -v timeout >/dev/null; then timeout "$t" "$@"; elif command -v gtimeout >/dev/null; then gtimeout "$t" "$@"; else "$@"; fi; }
 b64() { base64 | tr -d '\n'; }
-randpw() { LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c "${1:-24}" || true; }
+randpw() { LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c "${1:-24}" || true; }
 
 # Bricks ArgoCD will deploy: every helm/platform/* folder not excluded in the platform ApplicationSet, + helm/apps/*.
 enabled_components() {
@@ -135,7 +135,12 @@ doctor() {
 # same release name, so ArgoCD takes it over.
 helm_bootstrap() {
   local name=$1 ns=$2; shift 2
-  helm dependency update "$ROOT/helm/platform/$name" >/dev/null
+  # GitHub-hosted chart downloads sometimes fail (5xx): retry before giving up
+  local i; for i in 1 2 3 4 5; do
+    helm dependency update "$ROOT/helm/platform/$name" >/dev/null 2>&1 && break
+    [ "$i" -lt 5 ] || helm dependency update "$ROOT/helm/platform/$name" >/dev/null
+    warn "downloading the $name chart failed, retrying ($i/4)"; sleep $((i * 10))
+  done
   helm upgrade --install "$name" "$ROOT/helm/platform/$name" -n "$ns" --create-namespace \
     -f "$CONFIG" "$@" --wait --timeout 10m >/dev/null
 }
@@ -169,7 +174,7 @@ bootstrap_secrets() {
   fi
   if has infisical; then
     local vp; vp="$(randpw 32)"
-    ensure_secret infisical infisical-secrets "ENCRYPTION_KEY=$(LC_ALL=C tr -dc 'a-f0-9' </dev/urandom | head -c 32)" \
+    ensure_secret infisical infisical-secrets "ENCRYPTION_KEY=$(LC_ALL=C tr -dc 'a-f0-9' </dev/urandom 2>/dev/null | head -c 32)" \
       "AUTH_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '\n')" "VALKEY_PASSWORD=$vp" \
       "REDIS_URL=redis://:$vp@infisical-valkey.infisical.svc:6379"
   fi
