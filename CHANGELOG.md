@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/dedsxc/kien-stack-essential/compare/v0.2.2...v0.2.3) (2026-11-08)
+
+
+### Bug fixes
+
+* **install:** retry chart downloads, silence tr broken pipe ([#10](https://github.com/dedsxc/kien-stack-essential/issues/10)) ([ee4b9c5](https://github.com/dedsxc/kien-stack-essential/commit/ee4b9c508b254df5e472f10cbb5800940657aa77))
+
 ## [0.2.2](https://github.com/dedsxc/kien-stack-essential/compare/v0.2.1...v0.2.2) (2026-11-08)
 
 
