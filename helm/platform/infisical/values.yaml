@@ -49,6 +49,9 @@ cnpg-cluster:
         login: true
         superuser: false
         createdb: false
+        # CRD defaults, explicit: otherwise ArgoCD (server-side diff) shows the Cluster OutOfSync forever
+        inherit: true
+        connectionLimit: -1
         passwordSecret:
           name: infisical-cnpg
   database:
