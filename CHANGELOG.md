@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/dedsxc/kien-stack-essential/compare/v0.2.3...v0.2.4) (2026-11-08)
+
+
+### Bug fixes
+
+* values carry no global defaults, cluster.yaml provides them ([#13](https://github.com/dedsxc/kien-stack-essential/issues/13)) ([32817b7](https://github.com/dedsxc/kien-stack-essential/commit/32817b74df56d10d081f81a6e969de8782bfe157))
+
 ## [0.2.3](https://github.com/dedsxc/kien-stack-essential/compare/v0.2.2...v0.2.3) (2026-11-08)
 
 
