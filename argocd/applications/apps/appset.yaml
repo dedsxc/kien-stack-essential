@@ -12,7 +12,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/dedsxc/kien-stack-essential.git
-        revision: main
+        revision: e2e-ess-gw
         directories:
           - path: "helm/apps/*"
   template:
@@ -24,7 +24,7 @@ spec:
       project: apps
       source:
         repoURL: https://github.com/dedsxc/kien-stack-essential.git
-        targetRevision: main
+        targetRevision: e2e-ess-gw
         path: "{{ .path.path }}"
         helm:
           releaseName: "{{ .path.basename }}"
