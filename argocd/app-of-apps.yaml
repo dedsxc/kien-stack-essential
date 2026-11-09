@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/dedsxc/kien-stack-essential.git
-    targetRevision: main
+    targetRevision: e2e-ess-boot
     path: argocd/applications
   destination:
     server: https://kubernetes.default.svc

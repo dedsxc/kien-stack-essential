@@ -12,7 +12,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/dedsxc/kien-stack-essential.git
-        revision: main
+        revision: e2e-ess-boot
         directories:
           - path: "helm/platform/*"
           # Optional bricks: remove the entry to enable
@@ -38,7 +38,7 @@ spec:
       project: platform
       source:
         repoURL: https://github.com/dedsxc/kien-stack-essential.git
-        targetRevision: main
+        targetRevision: e2e-ess-boot
         path: "{{ .path.path }}"
         helm:
           releaseName: "{{ .path.basename }}"

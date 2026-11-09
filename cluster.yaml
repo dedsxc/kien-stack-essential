@@ -3,7 +3,7 @@
 # https://shop.kien.cc/install.sh fills it in for you on the first install.
 global:
   # Apps get <name>.<domain>, e.g. argocd.example.com. No domain? <node-ip>.sslip.io
-  domain: example.com
+  domain: 192.168.49.2.sslip.io
   # ClusterIssuer of the Gateway certificates: selfsigned-ca | letsencrypt
   issuer: selfsigned-ca
   ingressClass: traefik
