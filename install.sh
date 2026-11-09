@@ -103,7 +103,7 @@ doctor() {
   fi
 
   local r; r=$(repo)
-  case "$r" in *dedsxc/kien-stack-essential*) warn "argocd/app-of-apps.yaml still points to our public repo: put your fork's URL there (and in argocd/applications/*/appset.yaml)" ;; esac
+  case "$r" in *kien-stack/essential*|*dedsxc/kien-stack-essential*) warn "argocd/app-of-apps.yaml still points to our public repo: put your fork's URL there (and in argocd/applications/*/appset.yaml)" ;; esac
   if grep -rq "repoURL: $r" "$ROOT"/argocd/applications/*/appset.yaml && [ "$(grep -rh 'repoURL:' "$ROOT"/argocd/applications/*/appset.yaml | sort -u | wc -l)" -eq 1 ]; then
     ok "ApplicationSets follow the same repo as app-of-apps"
   else ko "argocd/applications/*/appset.yaml must use the same repoURL as argocd/app-of-apps.yaml ($r)"; fail=1; fi
