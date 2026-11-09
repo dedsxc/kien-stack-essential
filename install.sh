@@ -226,7 +226,9 @@ install() {
   fi
 
   log "Installing ArgoCD (Helm, then self-managed by ArgoCD)"
-  helm_bootstrap argocd argocd
+  # The HTTPRoute needs the Gateway API CRDs, installed later by the traefik brick:
+  # ArgoCD creates it when it takes itself over
+  helm_bootstrap argocd argocd --set argo-cd.server.httproute.enabled=false
   ok "ArgoCD ready"
   local pw; pw=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' 2>/dev/null | base64 -d 2>/dev/null || true)
   log "ArgoCD login: admin / ${pw:-<see argocd-initial-admin-secret>}"
