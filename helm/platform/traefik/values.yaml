@@ -30,6 +30,8 @@ traefik:
   service:
     spec:
       type: LoadBalancer
+      # Local keeps the real client IP (X-Forwarded-For). Required by OpenClaw, useful in access logs.
+      externalTrafficPolicy: Local
   # extraObjects are rendered with tpl: HTTP listener (redirect + ACME HTTP01) + one HTTPS listener per app
   extraObjects:
     - |
