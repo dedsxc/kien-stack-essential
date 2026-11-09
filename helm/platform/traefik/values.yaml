@@ -1,5 +1,18 @@
 # Values of the upstream chart go under "traefik:". global.* comes from ArgoCD (domain, issuer...).
+# Apps are exposed with Gateway API: one Gateway "traefik" (extraObjects below) + one HTTPRoute per app.
+# TLS: one HTTPS listener per app in global.gatewayHosts (cluster.yaml), cert-manager creates <app>-tls.
+traefik-crds:
+  traefik: false
+  gatewayAPI: true
 traefik:
+  providers:
+    kubernetesGateway:
+      enabled: true
+  # The chart's Gateway cannot template hostnames (global.domain): ours is in extraObjects
+  gateway:
+    enabled: false
+  gatewayClass:
+    enabled: true
   ingressClass:
     enabled: true
     isDefaultClass: true
@@ -17,3 +30,33 @@ traefik:
   service:
     spec:
       type: LoadBalancer
+  # extraObjects are rendered with tpl: HTTP listener (redirect + ACME HTTP01) + one HTTPS listener per app
+  extraObjects:
+    - |
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: Gateway
+      metadata:
+        name: traefik
+        annotations:
+          argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+          cert-manager.io/cluster-issuer: {{ .Values.global.issuer }}
+      spec:
+        gatewayClassName: traefik
+        listeners:
+          - name: web
+            port: 8000
+            protocol: HTTP
+            allowedRoutes:
+              namespaces: {from: All}
+          {{- range .Values.global.gatewayHosts }}
+          - name: https-{{ . }}
+            port: 8443
+            protocol: HTTPS
+            hostname: {{ . }}.{{ $.Values.global.domain }}
+            tls:
+              mode: Terminate
+              certificateRefs:
+                - name: {{ . }}-tls
+            allowedRoutes:
+              namespaces: {from: All}
+          {{- end }}

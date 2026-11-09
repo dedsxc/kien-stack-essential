@@ -4,9 +4,15 @@
 global:
   # Apps get <name>.<domain>, e.g. argocd.example.com. No domain? <node-ip>.sslip.io
   domain: example.com
-  # ClusterIssuer used by the Ingresses: selfsigned-ca | letsencrypt
+  # ClusterIssuer of the Gateway certificates: selfsigned-ca | letsencrypt
   issuer: selfsigned-ca
   ingressClass: traefik
+  # Apps exposed on the Gateway (traefik/traefik): one HTTPS listener + certificate <app>.<domain> each.
+  # Your own app in helm/apps/<app>: add it here, then an HTTPRoute (app-template "route:", see hello).
+  gatewayHosts:
+    - argocd
+    - infisical
+    - hello
   tls:
     # selfsigned | letsencrypt-http01 | letsencrypt-dns01 (then issuer: letsencrypt)
     issuer: selfsigned

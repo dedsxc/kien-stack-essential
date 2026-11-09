@@ -2,7 +2,7 @@
 # API token: secret external-dns/external-dns-api-token (install.sh creates it from EXTERNAL_DNS_API_TOKEN).
 external-dns:
   sources:
-    - ingress
+    - gateway-httproute
   policy: upsert-only
   txtOwnerId: kien-stack
   env:

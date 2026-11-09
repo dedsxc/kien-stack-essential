@@ -6,7 +6,7 @@ ArgoCD deploys and manages everything from your Git repo.
 | Component | Role |
 |---|---|
 | ArgoCD | GitOps: everything deployed from Git (app-of-apps, self-managed) |
-| Traefik | Ingress |
+| Traefik | Gateway API (HTTPRoute) |
 | cert-manager | TLS: self-signed CA or Let's Encrypt (HTTP-01 / DNS-01) |
 | external-dns | DNS records (only if `dns.provider` is set) |
 | External Secrets + Infisical | Secrets out of Git (self-hosted Infisical on CloudNativePG + Valkey) |

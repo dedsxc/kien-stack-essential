@@ -12,20 +12,20 @@ app-template:
       ports:
         http:
           port: 80
-  ingress:
+  # https://hello.<domain>: listener https-hello of the cluster Gateway (global.gatewayHosts in cluster.yaml)
+  route:
     main:
       enabled: true
-      className: traefik
-      annotations:
-        cert-manager.io/cluster-issuer: '{{ .Values.global.issuer }}'
-      hosts:
-        - host: 'hello.{{ .Values.global.domain }}'
-          paths:
-            - path: /
-              service:
-                identifier: main
-                port: http
-      tls:
-        - secretName: hello-tls
-          hosts:
-            - 'hello.{{ .Values.global.domain }}'
+      kind: HTTPRoute
+      parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: traefik
+          namespace: traefik
+          sectionName: https-hello
+      rules:
+        - backendRefs:
+            - identifier: main
+              port: 80
+          matches:
+            - path: {type: PathPrefix, value: /}

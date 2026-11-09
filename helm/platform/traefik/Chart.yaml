@@ -1,9 +1,13 @@
 apiVersion: v2
 name: traefik
-description: kien/stack traefik (wraps the upstream chart)
+description: kien/stack traefik (wraps the upstream chart, Gateway API)
 type: application
-version: 0.1.0
+version: 0.2.0
 dependencies:
   - name: traefik
     repository: https://traefik.github.io/charts
     version: 42.2.0
+  # Gateway API CRDs (standard channel); the Traefik CRDs come with the traefik chart itself
+  - name: traefik-crds
+    repository: https://traefik.github.io/charts
+    version: 1.18.0

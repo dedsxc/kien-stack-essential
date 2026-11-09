@@ -68,7 +68,10 @@ spec:
           {{- end }}
       {{- else }}
       - http01:
-          ingress:
-            ingressClassName: {{ .Values.global.ingressClass }}
+          gatewayHTTPRoute:
+            parentRefs:
+              - name: traefik
+                namespace: traefik
+                sectionName: web
       {{- end }}
 {{- end }}

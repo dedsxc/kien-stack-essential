@@ -7,9 +7,18 @@ argo-cd:
         - apiGroups: [cilium.io]
           kinds: [CiliumIdentity]
   server:
-    # Ingress is in templates/ingress.yaml (needs global.domain)
     ingress:
       enabled: false
+    # https://argocd.<domain>: listener https-argocd of the cluster Gateway (traefik/traefik) gives the hostname
+    httproute:
+      enabled: true
+      parentRefs:
+        - name: traefik
+          namespace: traefik
+          sectionName: https-argocd
+      rules:
+        - matches:
+            - path: {type: PathPrefix, value: /}
   dex:
     enabled: false
   notifications:
