@@ -85,7 +85,7 @@ jobs:
         run: bash hack/validate.sh
 
   install:
-    name: Install ${{ matrix.chart }}
+    name: Template ${{ matrix.chart }}
     needs: changes
     if: needs.changes.outputs.charts != '[]'
     runs-on: ubuntu-latest
@@ -102,17 +102,6 @@ jobs:
         run: |
           curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
             | sudo tar -xz -C /usr/local/bin kubeconform
-      - name: Mode
-        id: mode
-        env:
-          CHART: ${{ matrix.chart }}
-        run: |
-          # Charts that need a real cluster bootstrap (CNI, CRD + CR in the same release, external
-          # providers) are rendered and schema-checked; the others are really installed in kind.
-          case "$(basename "$CHART")" in
-            cilium|cert-manager|external-secrets|external-dns|infisical|argocd) echo "mode=template" >> "$GITHUB_OUTPUT" ;;
-            *) echo "mode=install" >> "$GITHUB_OUTPUT" ;;
-          esac
       - name: helm dependency build
         run: helm dependency build "${{ matrix.chart }}" || helm dependency update "${{ matrix.chart }}"
       - name: Template + kubeconform
@@ -125,26 +114,6 @@ jobs:
             | kubeconform -strict -summary -ignore-missing-schemas -kubernetes-version 1.33.0 \
                 -schema-location default \
                 -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
-      - name: Create kind cluster
-        if: steps.mode.outputs.mode == 'install'
-        uses: helm/kind-action@ea822c7bf1874f08e5a491df991c228edffc3376 # v1.15.2
-      - name: helm install (kind)
-        if: steps.mode.outputs.mode == 'install'
-        env:
-          CHART: ${{ matrix.chart }}
-        run: |
-          set -euo pipefail
-          n=$(basename "$CHART")
-          # kind has no load balancer and no openebs storage class
-          helm upgrade --install "$n" "$CHART" -n "$n" --create-namespace -f cluster.yaml \
-            --set traefik.service.spec.type=NodePort --set global.storageClass=standard \
-            --wait --timeout 5m
-          kubectl get pods -n "$n"
-      - name: Debug on failure
-        if: failure() && steps.mode.outputs.mode == 'install'
-        run: |
-          kubectl get pods -A || true
-          kubectl get events -A --sort-by=.lastTimestamp | tail -50 || true
 
   result:
     # Single required check for branch protection / Renovate automerge.
