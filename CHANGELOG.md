@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/dedsxc/kien-stack-essential/compare/v0.2.4...v0.3.0) (2026-11-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* expose apps with Gateway API (HTTPRoute) instead of Ingress ([#15](https://github.com/dedsxc/kien-stack-essential/issues/15))
+
+### Features
+
+* expose apps with Gateway API (HTTPRoute) instead of Ingress ([#15](https://github.com/dedsxc/kien-stack-essential/issues/15)) ([db040f7](https://github.com/dedsxc/kien-stack-essential/commit/db040f7309994c47ea6e763bcb5ae75f46108004))
+
 ## [0.2.4](https://github.com/dedsxc/kien-stack-essential/compare/v0.2.3...v0.2.4) (2026-11-08)
 
 
