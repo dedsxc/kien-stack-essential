@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/dedsxc/kien-stack-essential/compare/v0.3.0...v0.3.1) (2026-11-09)
+
+
+### Bug fixes
+
+* **install:** bootstrap ArgoCD without HTTPRoute ([#19](https://github.com/dedsxc/kien-stack-essential/issues/19)) ([60ee916](https://github.com/dedsxc/kien-stack-essential/commit/60ee9161a728fa0d255b94d61c893e0ee182be0a))
+* **install:** make install.sh executable ([#17](https://github.com/dedsxc/kien-stack-essential/issues/17)) ([f643792](https://github.com/dedsxc/kien-stack-essential/commit/f643792bedaa0909c598c6268fb7afdc92bfca55))
+
 ## [0.3.0](https://github.com/dedsxc/kien-stack-essential/compare/v0.2.4...v0.3.0) (2026-11-09)
 
 
