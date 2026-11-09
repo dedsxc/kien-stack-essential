@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/dedsxc/kien-stack-essential/compare/v0.3.1...v0.3.2) (2026-11-09)
+
+
+### Bug fixes
+
+* **traefik:** externalTrafficPolicy Local to keep client IP ([#20](https://github.com/dedsxc/kien-stack-essential/issues/20)) ([c15ecae](https://github.com/dedsxc/kien-stack-essential/commit/c15ecae4095c2f159bfcd4c3cda419ae00c94b7d))
+
 ## [0.3.1](https://github.com/dedsxc/kien-stack-essential/compare/v0.3.0...v0.3.1) (2026-11-09)
 
 
