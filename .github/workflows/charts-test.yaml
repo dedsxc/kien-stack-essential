@@ -23,7 +23,7 @@ env:
 jobs:
   changes:
     name: Changed charts
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, coder]
     outputs:
       charts: ${{ steps.list.outputs.charts }}
     steps:
@@ -54,7 +54,7 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, coder]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -88,7 +88,7 @@ jobs:
     name: Template ${{ matrix.chart }}
     needs: changes
     if: needs.changes.outputs.charts != '[]'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, coder]
     strategy:
       fail-fast: false
       matrix:
@@ -120,7 +120,7 @@ jobs:
     name: Charts test result
     if: always()
     needs: [lint, install]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, coder]
     steps:
       - name: Check
         env:
