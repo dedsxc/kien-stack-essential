@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/kien-stack/essential/compare/v0.3.2...v0.3.3) (2026-11-09)
+
+
+### Features
+
+* generate passwords with the External Secrets ClusterGenerator ([#27](https://github.com/kien-stack/essential/issues/27)) ([5c48b9c](https://github.com/kien-stack/essential/commit/5c48b9c32bfcfffcba6fd134cd805fdf72f1992a))
+
 ## [0.3.2](https://github.com/dedsxc/kien-stack-essential/compare/v0.3.1...v0.3.2) (2026-11-09)
 
 
