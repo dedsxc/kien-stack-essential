@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/dedsxc/kien-stack-essential.git
+    repoURL: https://github.com/kien-stack/essential.git
     targetRevision: main
     path: argocd/applications
   destination:

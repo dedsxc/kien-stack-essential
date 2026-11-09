@@ -11,7 +11,7 @@ spec:
     - missingkey=error
   generators:
     - git:
-        repoURL: https://github.com/dedsxc/kien-stack-essential.git
+        repoURL: https://github.com/kien-stack/essential.git
         revision: main
         directories:
           - path: "helm/apps/*"
@@ -23,7 +23,7 @@ spec:
     spec:
       project: apps
       source:
-        repoURL: https://github.com/dedsxc/kien-stack-essential.git
+        repoURL: https://github.com/kien-stack/essential.git
         targetRevision: main
         path: "{{ .path.path }}"
         helm:
