@@ -172,12 +172,6 @@ bootstrap_secrets() {
   if has external-dns && [ -n "${EXTERNAL_DNS_API_TOKEN:-}" ]; then
     ensure_secret external-dns external-dns-api-token "api-token=$EXTERNAL_DNS_API_TOKEN"
   fi
-  if has infisical; then
-    local vp; vp="$(randpw 32)"
-    ensure_secret infisical infisical-secrets "ENCRYPTION_KEY=$(LC_ALL=C tr -dc 'a-f0-9' </dev/urandom 2>/dev/null | head -c 32)" \
-      "AUTH_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '\n')" "VALKEY_PASSWORD=$vp" \
-      "REDIS_URL=redis://:$vp@infisical-valkey.infisical.svc:6379"
-  fi
   if [ "$provider" = infisical ]; then
     ensure_secret external-secrets "$(cfg .global.secrets.infisical.credentialsSecret)" \
       "clientId=${INFISICAL_CLIENT_ID:?}" "clientSecret=${INFISICAL_CLIENT_SECRET:?}"
@@ -185,16 +179,6 @@ bootstrap_secrets() {
     return
   fi
   # provider none: generation locale (valeurs aleatoires), jamais commitees
-  has monitoring && ensure_secret monitoring grafana-admin admin-user=admin "admin-password=$(randpw)"
-  if has onyx; then
-    local s3u s3p
-    s3u=$(randpw 16); s3p=$(randpw 32)
-    ensure_secret onyx onyx-postgresql --type=kubernetes.io/basic-auth username=postgres "password=$(randpw)"
-    ensure_secret onyx onyx-redis "redis_password=$(randpw)"
-    ensure_secret onyx onyx-objectstorage "s3_aws_access_key_id=$s3u" "s3_aws_secret_access_key=$s3p" "rootUser=$s3u" "rootPassword=$s3p"
-    ensure_secret onyx onyx-opensearch opensearch_admin_username=admin "opensearch_admin_password=Aa1!$(randpw 20)"
-    ensure_secret onyx onyx-userauth "user_auth_secret=$(randpw 64)"
-  fi
   if has litellm; then
     local mk; mk="sk-$(randpw 32)"
     ensure_secret litellm litellm-masterkey "masterkey=$mk"
@@ -206,7 +190,6 @@ bootstrap_secrets() {
     ensure_secret seaweedfs seaweedfs-s3 "seaweedfs_s3_config={\"identities\":[{\"name\":\"admin\",\"credentials\":[{\"accessKey\":\"$ak\",\"secretKey\":\"$sk\"}],\"actions\":[\"Admin\",\"Read\",\"List\",\"Tagging\",\"Write\"]}]}" "accessKey=$ak" "secretKey=$sk"
   fi
   has renovate && ensure_secret renovate renovate-env "RENOVATE_TOKEN=${RENOVATE_TOKEN:-}"
-  has authentik && ensure_secret authentik authentik-env "AUTHENTIK_SECRET_KEY=$(randpw 50)"
   return 0
 }
 
