@@ -6,12 +6,17 @@ metadata:
   name: infisical
 spec:
   parentRefs:
-    - name: traefik
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik
       namespace: traefik
       sectionName: https-infisical
   rules:
     - matches:
         - path: {type: PathPrefix, value: /}
       backendRefs:
-        - name: infisical-infisical-standalone-infisical
+        - group: ""
+          kind: Service
+          name: infisical-infisical-standalone-infisical
           port: 8080
+          weight: 1

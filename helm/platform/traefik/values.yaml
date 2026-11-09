@@ -56,7 +56,9 @@ traefik:
             tls:
               mode: Terminate
               certificateRefs:
-                - name: {{ . }}-tls
+                - group: ""
+                  kind: Secret
+                  name: {{ . }}-tls
             allowedRoutes:
               namespaces: {from: All}
           {{- end }}
