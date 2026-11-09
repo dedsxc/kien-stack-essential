@@ -69,7 +69,9 @@ jobs:
       - name: Install kubeconform
         run: |
           curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
-            | sudo tar -xz -C /usr/local/bin kubeconform
+            | tar -xz -C "$RUNNER_TEMP" kubeconform
+          # per-job install: several self-hosted runners share one machine
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
       - name: yamllint
         run: yamllint -c .yamllint.yaml .
       - name: helm lint
@@ -101,7 +103,9 @@ jobs:
       - name: Install kubeconform
         run: |
           curl -fsSL "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
-            | sudo tar -xz -C /usr/local/bin kubeconform
+            | tar -xz -C "$RUNNER_TEMP" kubeconform
+          # per-job install: several self-hosted runners share one machine
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
       - name: helm dependency build
         run: helm dependency build "${{ matrix.chart }}" || helm dependency update "${{ matrix.chart }}"
       - name: Template + kubeconform
