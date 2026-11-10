@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.4](https://github.com/kien-stack/essential/compare/v0.3.3...v0.3.4) (2026-11-10)
+
+
+### Features
+
+* host try.sh and install.sh in the repo (raw.githubusercontent.com) ([#30](https://github.com/kien-stack/essential/issues/30)) ([4337946](https://github.com/kien-stack/essential/commit/43379467dcbdf503cbd747618ecdda79bbccf747))
+
 ## [0.3.3](https://github.com/kien-stack/essential/compare/v0.3.2...v0.3.3) (2026-11-09)
 
 
