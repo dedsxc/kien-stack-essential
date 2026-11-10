@@ -30,7 +30,7 @@ permissions:
 jobs:
   validate:
     name: Validate config
-    runs-on: [self-hosted, coder]
+    runs-on: kien-stack
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: suzuki-shunsuke/github-action-renovate-config-validator@1e1604219a6b38ae9a10aff42a28a3656322c31a # v2.4.1
@@ -41,7 +41,7 @@ jobs:
     name: Renovate
     needs: validate
     if: github.event_name != 'pull_request'
-    runs-on: [self-hosted, coder]
+    runs-on: kien-stack
     env:
       HAS_TOKEN: ${{ secrets.RENOVATE_TOKEN != '' }}
     steps:

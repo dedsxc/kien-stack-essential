@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   release-please:
-    runs-on: [self-hosted, coder]
+    runs-on: kien-stack
     env:
       HAS_APP: ${{ secrets.BOT_APP_ID != '' }}
     steps:
