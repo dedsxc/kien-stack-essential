@@ -6,7 +6,7 @@
 #   cluster.yaml             your settings (domain, TLS...), passed to every chart
 #   argocd/app-of-apps.yaml  the repo/branch ArgoCD follows (same URL in argocd/applications/*/appset.yaml)
 #   argocd/applications/platform/appset.yaml   optional bricks: remove an "exclude" entry to enable it
-# After that, ArgoCD applies whatever you push. https://shop.kien.cc/install.sh does the edits for you.
+# After that, ArgoCD applies whatever you push. https://raw.githubusercontent.com/kien-stack/essential/main/scripts/install.sh does the edits for you.
 # Optional environment variables (secrets, never stored in Git):
 #   GIT_USERNAME / GIT_TOKEN          private GitOps repo (HTTPS)
 #   INFISICAL_CLIENT_ID / INFISICAL_CLIENT_SECRET   if global.secrets.provider=infisical

@@ -23,14 +23,14 @@ No Bitnami charts. All charts are upstream and pinned.
 Demo (zero questions, public repo, self-signed certs):
 
 ```bash
-curl -fsSL https://shop.kien.cc/try.sh | bash
-curl -fsSL https://shop.kien.cc/try.sh | bash -s uninstall
+curl -fsSL https://raw.githubusercontent.com/kien-stack/essential/main/scripts/try.sh | bash
+curl -fsSL https://raw.githubusercontent.com/kien-stack/essential/main/scripts/try.sh | bash -s uninstall
 ```
 
 Real install: [fork this repo](https://github.com/kien-stack/essential/fork), then
 
 ```bash
-curl -fsSL https://shop.kien.cc/install.sh | bash    # asks for your fork, domain, email
+curl -fsSL https://raw.githubusercontent.com/kien-stack/essential/main/scripts/install.sh | bash    # asks for your fork, domain, email
 ```
 
 Requirements: `kubectl`, `helm`, `git`, a Kubernetes cluster (2 vCPU, 6 GB RAM, 8 GB recommended).
@@ -77,7 +77,7 @@ No hidden configuration: what is in Git is what runs.
   (`helm/platform/argocd` + `cluster.yaml`, the same release ArgoCD then manages), and applies
   `argocd/app-of-apps.yaml` as committed. After that, you push and ArgoCD applies.
 
-[`shop.kien.cc/install.sh`](https://shop.kien.cc/install.sh) asks a few questions, writes the answers
+[`scripts/install.sh`](scripts/install.sh) asks a few questions, writes the answers
 into these files in your fork, commits, pushes, then runs `install.sh`. You can also edit them by hand:
 
 ```bash

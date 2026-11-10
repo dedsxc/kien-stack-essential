@@ -23,7 +23,7 @@ All images are public (docker.io, quay.io, ghcr.io, registry.k8s.io).
 
 ## No domain name?
 
-Leave the domain empty in `shop.kien.cc/install.sh`: it uses `<ip>.sslip.io` (free public DNS that resolves to the IP) with
+Leave the domain empty in `scripts/install.sh`: it uses `<ip>.sslip.io` (free public DNS that resolves to the IP) with
 **self-signed** certificates (CA in `cert-manager/selfsigned-ca`), e.g. `https://argocd.192.168.1.240.sslip.io`.
 Your browser shows a warning until you import the CA.
 
@@ -101,7 +101,7 @@ Only for a cluster created **without** a CNI nor kube-proxy, e.g. k3s:
 ## How do I remove everything?
 
 ```bash
-curl -fsSL https://shop.kien.cc/try.sh | bash -s uninstall
+curl -fsSL https://raw.githubusercontent.com/kien-stack/essential/main/scripts/try.sh | bash -s uninstall
 ```
 
 Namespaces and volumes are kept; delete them with `kubectl delete ns ...` if you want.

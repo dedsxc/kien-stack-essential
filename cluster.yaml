@@ -1,6 +1,6 @@
 # cluster.yaml: YOUR settings. ArgoCD passes this file to every chart (helm/platform/* and helm/apps/*)
 # after its own values.yaml (see valueFiles in argocd/applications/*/appset.yaml). Edit, push, done.
-# https://shop.kien.cc/install.sh fills it in for you on the first install.
+# https://raw.githubusercontent.com/kien-stack/essential/main/scripts/install.sh fills it in for you on the first install.
 global:
   # Apps get <name>.<domain>, e.g. argocd.example.com. No domain? <node-ip>.sslip.io
   domain: example.com
