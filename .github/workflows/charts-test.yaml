@@ -65,6 +65,12 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
+      # ARC runner image (ghcr.io/actions/actions-runner) ships without envsubst (chart-testing-action), kubectl, jq.
+      - name: Install base tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq gettext-base jq >/dev/null
+          curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /tmp/kubectl
+          sudo install -m 0755 /tmp/kubectl /usr/local/bin/kubectl
       - uses: helm/chart-testing-action@720270857a28afd41e2426521a7801db09e9b510 # v2.9.0
       - name: Install kubeconform
         run: |
