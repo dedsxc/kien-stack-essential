@@ -51,10 +51,10 @@
     },
     "containers/example": {
       "component": "example",
-      "package-name": "example",
       "release-type": "simple",
       "version-file": "VERSION",
       "include-component-in-tag": true
     }
-  }
+  },
+  "separate-pull-requests": true
 }
