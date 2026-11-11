@@ -79,5 +79,12 @@
       groupName: 'ci tooling',
       addLabels: ['ci'],
     },
+    {
+      description: 'Container base images: fix(deps) so release-please bumps the image version',
+      matchFileNames: ['containers/**'],
+      semanticCommitType: 'fix',
+      semanticCommitScope: 'deps',
+      addLabels: ['containers'],
+    },
   ],
 }

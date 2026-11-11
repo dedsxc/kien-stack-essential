@@ -1,9 +1,12 @@
 name: "Containers"
 
 # Builds every image under containers/<name>/ (Dockerfile + VERSION, optional PLATFORM).
+# VERSION is managed by release-please: each image is a release-please package, so a
+# feat:/fix: commit under containers/<name>/ opens a release PR that bumps VERSION.
 # - pull request: build, scan with Trivy, post the result as a PR comment (nothing is pushed)
-# - push to main: build and push ghcr.io/<owner>/<name>:<VERSION> and :latest
-# - daily: rebuild and push every image, so base image security fixes land without a code change
+# - push to main: build and push the images whose VERSION changed (release PR merged)
+#   as ghcr.io/<owner>/<name>:<VERSION> and :latest
+# - daily: rebuild and push every image at its current VERSION, so base image security fixes land
 # Uses the built-in GITHUB_TOKEN: no secret to create. See docs/CONTAINERS.md.
 
 on:
@@ -44,7 +47,8 @@ jobs:
              || git diff --name-only "$BASE" HEAD | grep -q '^.github/workflows/containers.yaml$'; then
             list="$all"
           else
-            list=$(git diff --name-only "$BASE" HEAD -- containers | cut -d/ -f2 | sort -u | grep -Fx -f <(printf '%s\n' "$all") || true)
+            if [ "$EVENT" = "push" ]; then path='containers/*/VERSION'; else path=containers; fi
+            list=$(git diff --name-only "$BASE" HEAD -- "$path" | cut -d/ -f2 | sort -u | grep -Fx -f <(printf '%s\n' "$all") || true)
           fi
           echo "images: $list"
           echo "matrix=$(printf '%s\n' "$list" | jq -R . | jq -sc 'map(select(length>0))')" >> "$GITHUB_OUTPUT"
