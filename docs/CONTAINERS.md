@@ -1,64 +1,41 @@
-# Build your own container images
+# Container images
 
-Put your images in `containers/<name>/`. The `Containers` workflow builds them on GitHub-hosted runners and publishes them to the GitHub Container Registry of your account.
-
-```
-containers/
-  my-app/
-    Dockerfile   # required
-    VERSION      # image tag, managed by release-please
-    PLATFORM     # optional, default linux/amd64 (e.g. linux/amd64,linux/arm64)
-```
-
-| When | What happens |
-|---|---|
-| Pull request touching `containers/` | Image is built and scanned with Trivy. The result is posted as a PR comment. Nothing is pushed. |
-| Release PR merged | release-please bumped `VERSION`: the image is built and pushed as `ghcr.io/<owner>/<name>:<VERSION>` and `:latest`. |
-| Every day (02:00 UTC) | Every image is rebuilt and pushed, so base image security fixes land without a code change. |
-
-## Versions with release-please
-
-Each image is a release-please package. A `feat:` or `fix:` commit touching `containers/<name>/` opens (or updates) a release PR that bumps `VERSION` and writes `containers/<name>/CHANGELOG.md`. Merging it tags `<name>-vX.Y.Z` and publishes the image. Never edit `VERSION` by hand.
-
-Renovate keeps the `FROM` lines (tag and digest) up to date with `fix(deps):` commits, so a base image update also ships a new patch version.
+Build your own images in this repo. GitHub Actions builds them and pushes them to `ghcr.io/<owner>/<name>`.
 
 ## Add an image
 
-A new image must be registered by hand, once. Without it, release-please ignores the folder and the image is never published.
-
-1. Create the folder, for example `containers/my-app/`, with:
+1. Create `containers/my-app/` with:
    - `Dockerfile`
-   - `VERSION` containing the starting version: `0.1.0`
-   - `PLATFORM` (optional), e.g. `linux/amd64,linux/arm64`
+   - `VERSION` containing `0.1.0`
 
-2. Add the image to `.github/release-please-config.json`, under `packages`:
+2. In `.github/release-please-config.json`, add under `packages`:
 
    ```json
-   "containers/my-app": {
-     "component": "my-app",
-     "package-name": "my-app",
-     "release-type": "simple",
-     "version-file": "VERSION",
-     "include-component-in-tag": true
-   }
+   "containers/my-app": { "component": "my-app", "release-type": "simple", "version-file": "VERSION", "include-component-in-tag": true }
    ```
 
-3. Add the same starting version to `.github/.release-please-manifest.json`:
+3. In `.github/.release-please-manifest.json`, add:
 
    ```json
    "containers/my-app": "0.1.0"
    ```
 
-   It must match `VERSION`.
+4. Open a PR with a `feat:` commit and merge it.
 
-4. Open a PR with a `feat:` commit, e.g. `feat(my-app): add my-app image`. CI builds and scans the image.
+release-please then opens a release PR. Merge it: the image is pushed as `ghcr.io/<owner>/my-app:0.1.0`.
 
-5. Merge it. release-please opens a release PR for `my-app`. Merging that release PR tags `my-app-vX.Y.Z` and publishes `ghcr.io/<owner>/my-app`.
+## What runs
 
-After that, never edit `VERSION` by hand: release-please bumps it from your `feat:` / `fix:` commits.
+- **Pull request**: build + security scan, result posted in the PR. Nothing is pushed.
+- **Release PR merged**: build + push to GHCR.
+- **Every night**: rebuild to pick up base image fixes.
 
-To remove an image, delete its folder and its entries in both files.
+Don't edit `VERSION` by hand: release-please bumps it from your `feat:` / `fix:` commits.
 
-## GitHub recommended
+## Good to know
 
-The CI of kien/stack (chart tests, Renovate workflow, container builds) runs on GitHub Actions. You can host the GitOps repo on any Git server ArgoCD can reach (GitLab, Gitea, Forgejo...), but these workflows will not run there.
+- No secret to set up.
+- Images are private if your repo is private. Make the package public, or add an image pull secret in your cluster.
+- Multi-arch: add a `PLATFORM` file, e.g. `linux/amd64,linux/arm64`.
+- `containers/example` is a sample you can copy or delete.
+- This needs GitHub. On another Git server, ArgoCD works but this CI does not run.
