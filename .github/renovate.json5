@@ -12,7 +12,7 @@
   // deps: commits show up in the release changelog
   semanticCommitType: 'deps',
   timezone: 'Europe/Paris',
-  schedule: ['before 6am every day'],
+  schedule: ['before 6am'], // every day,
   dependencyDashboard: true,
   labels: ['renovate'],
   prConcurrentLimit: 10,
