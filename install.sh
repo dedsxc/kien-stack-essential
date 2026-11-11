@@ -64,13 +64,13 @@ foreign_metrics_server() {
 }
 
 git_ls_remote() {
-  local url=$1
+  local url=$1 ref=${2:-HEAD}
   if [ -n "${GIT_TOKEN:-}" ]; then
     GIT_TERMINAL_PROMPT=0 run_timeout 30 git -c credential.helper= \
       -c "http.extraheader=Authorization: Basic $(printf '%s:%s' "${GIT_USERNAME:-git}" "$GIT_TOKEN" | b64)" \
-      ls-remote "$url" HEAD
+      ls-remote "$url" "$ref"
   else
-    GIT_TERMINAL_PROMPT=0 run_timeout 30 git -c credential.helper= ls-remote "$url" HEAD
+    GIT_TERMINAL_PROMPT=0 run_timeout 30 git -c credential.helper= ls-remote "$url" "$ref"
   fi
 }
 
@@ -109,6 +109,21 @@ doctor() {
   else ko "argocd/applications/*/appset.yaml must use the same repoURL as argocd/app-of-apps.yaml ($r)"; fail=1; fi
   if git_ls_remote "$r" >/dev/null 2>&1; then ok "Git repo reachable: $r ($(rev))"
   else ko "Git repo unreachable: $r (private repo? set GIT_USERNAME/GIT_TOKEN)"; fail=1; fi
+
+  # ArgoCD deploys what is in Git, not this folder: local edits must be committed and pushed
+  if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    if [ -n "$(git -C "$ROOT" status --porcelain -- cluster.yaml argocd helm 2>/dev/null)" ]; then
+      ko "uncommitted changes in cluster.yaml / argocd/ / helm/: ArgoCD only sees Git. Commit and push them: git -C $ROOT commit -am 'my settings' && git -C $ROOT push"; fail=1
+    else
+      local remote_sha; remote_sha=$(git_ls_remote "$r" "refs/heads/$(rev)" 2>/dev/null | awk -v b="refs/heads/$(rev)" '$2==b{print $1}')
+      local head_sha; head_sha=$(git -C "$ROOT" rev-parse HEAD)
+      if [ -n "$remote_sha" ] && [ "$remote_sha" != "$head_sha" ]; then
+        if git -C "$ROOT" merge-base --is-ancestor "$remote_sha" HEAD 2>/dev/null; then
+          ko "local commits not pushed to $r ($(rev)): ArgoCD only sees Git. Run: git -C $ROOT push"; fail=1
+        else warn "$r ($(rev)) differs from this folder: ArgoCD will deploy what is in Git"; fi
+      fi
+    fi
+  fi
 
   local domain; domain=$(cfg .global.domain)
   if [ -z "$domain" ] || [ "$domain" = example.com ]; then ko "set global.domain in cluster.yaml (no domain? <node-ip>.sslip.io)"; fail=1
