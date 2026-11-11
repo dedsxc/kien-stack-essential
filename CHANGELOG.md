@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.5](https://github.com/kien-stack/essential/compare/v0.3.4...v0.3.5) (2026-11-11)
+
+
+### Bug fixes
+
+* **install:** refuse to install when cluster.yaml / argocd / helm changes are not pushed ([#35](https://github.com/kien-stack/essential/issues/35)) ([3a14b16](https://github.com/kien-stack/essential/commit/3a14b163c8813291e7d2391837bfebb8aa47cb94))
+
 ## [0.3.4](https://github.com/kien-stack/essential/compare/v0.3.3...v0.3.4) (2026-11-10)
 
 
