@@ -20,9 +20,11 @@ Build your own images in this repo. GitHub Actions builds them and pushes them t
    "containers/my-app": "0.1.0"
    ```
 
-4. Open a PR with a `feat:` commit and merge it.
+4. Open a PR with a `feat:` or `fix:` commit and merge it. Other types (`chore:`, `docs:`...) don't trigger a release.
 
-release-please then opens a release PR. Merge it: the image is pushed as `ghcr.io/<owner>/my-app:0.1.0`.
+release-please then opens a release PR with the next version (e.g. `0.1.1`). Merge it: the image is pushed as `ghcr.io/<owner>/my-app:0.1.1`.
+
+`0.1.0` is the starting point, not a published version: the first image gets the next one.
 
 ## What runs
 
