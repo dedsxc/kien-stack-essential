@@ -24,16 +24,40 @@ Renovate keeps the `FROM` lines (tag and digest) up to date with `fix(deps):` co
 
 ## Add an image
 
-1. Copy `containers/example` to `containers/<name>` and set `VERSION` to `0.1.0`.
-2. Register it in `.github/release-please-config.json`:
-   `"containers/<name>": { "component": "<name>", "package-name": "<name>", "release-type": "simple", "version-file": "VERSION", "include-component-in-tag": true }`
-3. Add `"containers/<name>": "0.1.0"` to `.github/.release-please-manifest.json`.
+A new image must be registered by hand, once. Without it, release-please ignores the folder and the image is never published.
 
-No secret is needed: the workflow uses the built-in `GITHUB_TOKEN`. Packages are private by default; to pull them from the cluster, make the package public or add an image pull secret.
+1. Create the folder, for example `containers/my-app/`, with:
+   - `Dockerfile`
+   - `VERSION` containing the starting version: `0.1.0`
+   - `PLATFORM` (optional), e.g. `linux/amd64,linux/arm64`
 
-Use the image in a brick: `image: ghcr.io/<owner>/my-app:1.2.0`.
+2. Add the image to `.github/release-please-config.json`, under `packages`:
 
-`containers/example` is a minimal example you can copy or delete.
+   ```json
+   "containers/my-app": {
+     "component": "my-app",
+     "package-name": "my-app",
+     "release-type": "simple",
+     "version-file": "VERSION",
+     "include-component-in-tag": true
+   }
+   ```
+
+3. Add the same starting version to `.github/.release-please-manifest.json`:
+
+   ```json
+   "containers/my-app": "0.1.0"
+   ```
+
+   It must match `VERSION`.
+
+4. Open a PR with a `feat:` commit, e.g. `feat(my-app): add my-app image`. CI builds and scans the image.
+
+5. Merge it. release-please opens a release PR for `my-app`. Merging that release PR tags `my-app-vX.Y.Z` and publishes `ghcr.io/<owner>/my-app`.
+
+After that, never edit `VERSION` by hand: release-please bumps it from your `feat:` / `fix:` commits.
+
+To remove an image, delete its folder and its entries in both files.
 
 ## GitHub recommended
 
