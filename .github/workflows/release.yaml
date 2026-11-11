@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   release-please:
-    runs-on: kien-stack
+    runs-on: ubuntu-latest
     env:
       HAS_APP: ${{ secrets.BOT_APP_ID != '' }}
     steps:
