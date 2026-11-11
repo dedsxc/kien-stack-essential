@@ -13,7 +13,7 @@
   semanticCommitType: 'deps',
   timezone: 'Europe/Paris',
   schedule: ['before 6am'], // every day,
-  dependencyDashboard: true,
+  dependencyDashboard: { enabled: true },
   labels: ['renovate'],
   prConcurrentLimit: 10,
   // Conservative: nothing merges unless CI (charts-test) is green; Renovate waits for checks.
