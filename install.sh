@@ -268,6 +268,7 @@ wait_apps() {
     local pending="" a st now
     for a in app-of-apps $comps; do
       st=$(kubectl -n argocd get application "$a" -o jsonpath='{.status.sync.status}/{.status.health.status}' 2>/dev/null || true)
+      [ "$st" = / ] && st=""
       if [ "$st" = Synced/Healthy ]; then
         case "$done_list" in *" $a "*) ;; *) ok "$a"; done_list="$done_list$a " ;; esac
       else
