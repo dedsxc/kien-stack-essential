@@ -20,7 +20,7 @@ APP="$ROOT/argocd/app-of-apps.yaml"
 APPSET="$ROOT/argocd/applications/platform/appset.yaml"
 PACK=essential
 CMD=install
-ARGOCD_TIMEOUT=${ARGOCD_TIMEOUT:-600s}
+ARGOCD_TIMEOUT=${ARGOCD_TIMEOUT:-0}   # seconds to wait for the apps, 0 = until ready
 
 log()  { printf '\033[1;34m[kien/stack]\033[0m %s\n' "$*"; }
 ok()   { printf '  \033[32mOK\033[0m   %s\n' "$*"; }
@@ -258,26 +258,38 @@ YAML
 }
 
 wait_apps() {
-  local comps=$1 deadline=$(( $(date +%s) + ${ARGOCD_TIMEOUT%s} )) pending
-  log "Waiting for Synced/Healthy (timeout $ARGOCD_TIMEOUT)"
+  # Waits until every app is Synced/Healthy, as long as it takes (big apps on small servers can need 20+ min).
+  # Prints each app once when it becomes OK, and every minute what is still pending. Ctrl+C is safe:
+  # ArgoCD keeps deploying, check later with: kubectl -n argocd get applications
+  local comps=$1 start; start=$(date +%s)
+  local timeout=${ARGOCD_TIMEOUT%s} done_list=" " last=0 hinted=""
+  log "Waiting for the apps (Ctrl+C is safe: ArgoCD keeps deploying)"
   while :; do
-    pending=""
+    local pending="" a st now
     for a in app-of-apps $comps; do
-      local st
       st=$(kubectl -n argocd get application "$a" -o jsonpath='{.status.sync.status}/{.status.health.status}' 2>/dev/null || true)
-      [ "$st" = Synced/Healthy ] || pending="$pending $a(${st:-absent})"
-    done
-    [ -z "$pending" ] && { ok "all applications are Synced/Healthy"; return 0; }
-    if [ "$(date +%s)" -ge "$deadline" ]; then
-      warn "not ready yet:$pending"
-      if [ -z "$(kubectl -n traefik get svc traefik -o jsonpath='{.status.loadBalancer.ingress}' 2>/dev/null)" ] \
-         && [ "$(kubectl -n traefik get svc traefik -o jsonpath='{.spec.type}' 2>/dev/null)" = LoadBalancer ]; then
-        warn "Traefik is waiting for a load balancer IP: this cluster does not provide one."
-        warn "  -> minikube: 'minikube tunnel'; homelab: Cilium L2 (ciliumLB in cluster.yaml) or traefik NodePort"
+      if [ "$st" = Synced/Healthy ]; then
+        case "$done_list" in *" $a "*) ;; *) ok "$a"; done_list="$done_list$a " ;; esac
+      else
+        pending="$pending $a(${st:-waiting})"
       fi
-      return 1
+    done
+    [ -z "$pending" ] && { ok "all applications are Synced/Healthy ($(( ($(date +%s) - start) / 60 )) min)"; return 0; }
+    now=$(date +%s)
+    if [ $(( now - last )) -ge 60 ]; then
+      printf '  ...  %d min, waiting for:%s\n' $(( (now - start) / 60 )) "$pending"; last=$now
     fi
-    sleep 15
+    if [ -z "$hinted" ] && [ $(( now - start )) -ge 300 ] \
+       && [ -z "$(kubectl -n traefik get svc traefik -o jsonpath='{.status.loadBalancer.ingress}' 2>/dev/null)" ] \
+       && [ "$(kubectl -n traefik get svc traefik -o jsonpath='{.spec.type}' 2>/dev/null)" = LoadBalancer ]; then
+      warn "Traefik is waiting for a load balancer IP: this cluster does not provide one."
+      warn "  -> minikube: 'minikube tunnel'; homelab: Cilium L2 (ciliumLB in cluster.yaml) or traefik NodePort"
+      hinted=1
+    fi
+    if [ "${timeout:-0}" -gt 0 ] && [ $(( now - start )) -ge "$timeout" ]; then
+      warn "still not ready after ${timeout}s:$pending"; return 1
+    fi
+    sleep 10
   done
 }
 
