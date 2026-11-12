@@ -9,7 +9,7 @@ argocd:
       - any-glob-to-any-file: argocd/**
 ci:
   - changed-files:
-      - any-glob-to-any-file: [.github/**, hack/**, ct.yaml, .yamllint.yaml]
+      - any-glob-to-any-file: [.github/**, hack/**, .yamllint.yaml]
 docs:
   - changed-files:
       - any-glob-to-any-file: [docs/**, README.md]
