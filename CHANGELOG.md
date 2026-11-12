@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.6](https://github.com/kien-stack/essential/compare/v0.3.5...v0.3.6) (2026-11-12)
+
+
+### Features
+
+* **install:** wait until every app is ready, show progress ([#40](https://github.com/kien-stack/essential/issues/40)) ([7b34f52](https://github.com/kien-stack/essential/commit/7b34f521c60011537e4bab84d34b00257a8caf8b))
+
 ## [0.3.5](https://github.com/kien-stack/essential/compare/v0.3.4...v0.3.5) (2026-11-11)
 
 
