@@ -116,6 +116,14 @@ Validate offline: `bash hack/validate.sh` (helm template + kubeconform on every 
 **Private AI** (Onyx, Ollama, LiteLLM, Coder) and **All-In-One** (monitoring, SSO, S3, Argo Rollouts,
 Renovate, Radar, Terraform for AWS EKS) build on this Essential: https://shop.kien.cc
 
+## Back up the Infisical key
+
+Infisical encrypts every secret with `ENCRYPTION_KEY`, generated once in your cluster (Secret `infisical-secrets`, namespace `infisical`). It is never in Git and never regenerated. Without it, a database restore is unreadable: keep a copy somewhere safe.
+
+```sh
+kubectl -n infisical get secret infisical-secrets -o yaml > infisical-secrets.backup.yaml
+```
+
 ## License
 
 Apache-2.0. Open source components keep their own licenses.
