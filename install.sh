@@ -187,6 +187,13 @@ bootstrap_secrets() {
   if has external-dns && [ -n "${EXTERNAL_DNS_API_TOKEN:-}" ]; then
     ensure_secret external-dns external-dns-api-token "api-token=$EXTERNAL_DNS_API_TOKEN"
   fi
+  # Infisical root secrets: created ONCE here, never managed by ArgoCD (so never pruned or regenerated).
+  # ENCRYPTION_KEY encrypts all Infisical data: losing/changing it makes every stored secret unreadable.
+  if has infisical; then
+    local vk; vk=$(randpw 32)
+    ensure_secret infisical infisical-secrets "ENCRYPTION_KEY=$(od -An -tx1 -N16 /dev/urandom | tr -d ' \n')" \
+      "AUTH_SECRET=$(randpw 32 | base64)" "VALKEY_PASSWORD=$vk" "REDIS_URL=redis://:$vk@infisical-valkey.infisical.svc:6379"
+  fi
   if [ "$provider" = infisical ]; then
     ensure_secret external-secrets "$(cfg .global.secrets.infisical.credentialsSecret)" \
       "clientId=${INFISICAL_CLIENT_ID:?}" "clientSecret=${INFISICAL_CLIENT_SECRET:?}"

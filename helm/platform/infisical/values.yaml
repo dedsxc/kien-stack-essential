@@ -60,7 +60,7 @@ cnpg-cluster:
         owner: infisical
         secretName: infisical-cnpg
 # Valkey (BSD, Redis protocol) for Infisical queues/cache: official chart, no persistence (cache only).
-# Service infisical-valkey:6379; password VALKEY_PASSWORD from infisical-secrets (ExternalSecret templates/secrets.yaml, never in Git).
+# Service infisical-valkey:6379; password VALKEY_PASSWORD from infisical-secrets (created once by install.sh, never in Git).
 valkey:
   auth:
     enabled: true
