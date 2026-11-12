@@ -259,38 +259,55 @@ YAML
 
 wait_apps() {
   # Waits until every app is Synced/Healthy, as long as it takes (big apps on small servers can need 20+ min).
-  # Prints each app once when it becomes OK, and every minute what is still pending. Ctrl+C is safe:
-  # ArgoCD keeps deploying, check later with: kubectl -n argocd get applications
+  # ArgoCD deploys all apps in parallel; this only shows their state. Ctrl+C is safe: ArgoCD keeps deploying.
+  # Terminal: one live line per app (like docker pull). Otherwise (CI, pipe): one line per change.
   local comps=$1 start; start=$(date +%s)
-  local timeout=${ARGOCD_TIMEOUT%s} done_list=" " last=0 hinted=""
-  log "Waiting for the apps (Ctrl+C is safe: ArgoCD keeps deploying)"
+  local timeout=${ARGOCD_TIMEOUT%s} hinted="" apps a st now n=0 w=12 drawn="" spin='|/-\' i=0
+  apps="app-of-apps $comps"
+  for a in $apps; do n=$((n + 1)); [ ${#a} -ge $w ] && w=$(( ${#a} + 1 )); done
+  local tty=""; [ -t 1 ] && [ "${TERM:-dumb}" != dumb ] && tty=1
+  log "Waiting for the apps (deployed in parallel by ArgoCD; Ctrl+C is safe)"
+  local last=() j
   while :; do
-    local pending="" a st now
-    for a in app-of-apps $comps; do
+    local pending=0 lines=""
+    j=0
+    for a in $apps; do
+      j=$((j + 1))
       st=$(kubectl -n argocd get application "$a" -o jsonpath='{.status.sync.status}/{.status.health.status}' 2>/dev/null || true)
       [ "$st" = / ] && st=""
-      if [ "$st" = Synced/Healthy ]; then
-        case "$done_list" in *" $a "*) ;; *) ok "$a"; done_list="$done_list$a " ;; esac
-      else
-        pending="$pending $a(${st:-waiting})"
+      local label
+      case "$st" in
+        Synced/Healthy) label=$'\033[32mOK\033[0m' ;;
+        */Degraded)     label=$'\033[33m'"${st#*/}"$'\033[0m'; pending=$((pending + 1)) ;;
+        "")             label="waiting"; pending=$((pending + 1)) ;;
+        *)              label="${st#*/}"; pending=$((pending + 1)) ;;
+      esac
+      if [ -n "$tty" ]; then
+        [ "$label" = $'\033[32mOK\033[0m' ] || label="${spin:i%4:1} $label"
+        lines+=$(printf '  %-*s %s\033[K' "$w" "$a" "$label")$'\n'
+      elif [ "${last[j]:-}" != "$label" ]; then
+        printf '  %-*s %s\n' "$w" "$a" "$label"; last[j]=$label
       fi
     done
-    [ -z "$pending" ] && { ok "all applications are Synced/Healthy ($(( ($(date +%s) - start) / 60 )) min)"; return 0; }
     now=$(date +%s)
-    if [ $(( now - last )) -ge 60 ]; then
-      printf '  ...  %d min, waiting for:%s\n' $(( (now - start) / 60 )) "$pending"; last=$now
+    if [ -n "$tty" ]; then
+      [ -n "$drawn" ] && printf '\033[%dA' $((n + 1))
+      printf '%s' "$lines"; printf '  \033[2m%d/%d ready, %d min %02d s\033[0m\033[K\n' $((n - pending)) "$n" $(( (now - start) / 60 )) $(( (now - start) % 60 ))
+      drawn=1; i=$((i + 1))
     fi
+    [ "$pending" -eq 0 ] && { ok "all applications are Synced/Healthy ($(( (now - start) / 60 )) min)"; return 0; }
     if [ -z "$hinted" ] && [ $(( now - start )) -ge 300 ] \
        && [ -z "$(kubectl -n traefik get svc traefik -o jsonpath='{.status.loadBalancer.ingress}' 2>/dev/null)" ] \
        && [ "$(kubectl -n traefik get svc traefik -o jsonpath='{.spec.type}' 2>/dev/null)" = LoadBalancer ]; then
+      [ -n "$tty" ] && drawn=""
       warn "Traefik is waiting for a load balancer IP: this cluster does not provide one."
       warn "  -> minikube: 'minikube tunnel'; homelab: Cilium L2 (ciliumLB in cluster.yaml) or traefik NodePort"
       hinted=1
     fi
     if [ "${timeout:-0}" -gt 0 ] && [ $(( now - start )) -ge "$timeout" ]; then
-      warn "still not ready after ${timeout}s:$pending"; return 1
+      warn "still not ready after ${timeout}s"; return 1
     fi
-    sleep 10
+    sleep 3
   done
 }
 
