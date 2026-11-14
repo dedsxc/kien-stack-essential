@@ -14,6 +14,7 @@ app-template:
         image:
           repository: valkey/valkey   # your image
           tag: "8.1"
+          digest: ""
         args: ["--dir", "/data", "--appendonly", "yes"]
         resources:
           requests: {cpu: 10m, memory: 32Mi}
@@ -22,4 +23,5 @@ app-template:
     main:
       ports:
         tcp:
+          primary: true   # default probes check this port
           port: 6379

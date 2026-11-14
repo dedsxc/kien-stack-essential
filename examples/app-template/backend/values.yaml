@@ -8,6 +8,7 @@ app-template:
         image:
           repository: ghcr.io/stefanprodan/podinfo   # your image
           tag: "6.7.1"
+          digest: ""
         env:
           PORT: "9898"
           DB_PASSWORD:
@@ -54,3 +55,5 @@ app-template:
         - backendRefs:
             - identifier: main
               port: 9898
+          matches:
+            - path: {type: PathPrefix, value: /}

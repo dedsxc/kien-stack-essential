@@ -12,6 +12,7 @@ app-template:
         image:
           repository: busybox   # your image
           tag: "1.37"
+          digest: ""
         # No port to check: turn off the default probes.
         probes:
           liveness: {enabled: false}
