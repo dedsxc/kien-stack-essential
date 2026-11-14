@@ -6,7 +6,8 @@ app-template:
     containers:
       main:
         image:
-          repository: ghcr.io/stefanprodan/podinfo   # your image
+          # your image
+          repository: ghcr.io/stefanprodan/podinfo
           tag: "6.7.1"
           digest: ""
         env:
@@ -14,7 +15,8 @@ app-template:
           DB_PASSWORD:
             valueFrom:
               secretKeyRef:
-                name: backend-secret   # created by externalSecret below: <release>-secret
+                # created by externalSecret below: <release>-secret
+                name: backend-secret
                 key: db-password
         probes:
           readiness:
@@ -22,8 +24,11 @@ app-template:
             type: HTTP
             path: /readyz
         resources:
-          requests: {cpu: 10m, memory: 32Mi}
-          limits: {memory: 256Mi}
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 256Mi
   # Synced from Infisical by External Secrets: never in Git.
   externalSecret:
     secret:
@@ -35,7 +40,8 @@ app-template:
       data:
         - secretKey: db-password
           remoteRef:
-            key: DB_PASSWORD   # secret name in your Infisical project/env (cluster.yaml), root path
+            # secret name in your Infisical project/env (cluster.yaml), root path
+            key: DB_PASSWORD
   service:
     main:
       ports:
@@ -56,4 +62,6 @@ app-template:
             - identifier: main
               port: 9898
           matches:
-            - path: {type: PathPrefix, value: /}
+            - path:
+                type: PathPrefix
+                value: /

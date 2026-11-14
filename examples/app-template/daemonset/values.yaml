@@ -5,23 +5,33 @@ app-template:
     containers:
       main:
         image:
-          repository: busybox   # your agent image
+          # your agent image
+          repository: busybox
           tag: "1.37"
           digest: ""
         # No port to check: turn off the default probes.
         probes:
-          liveness: {enabled: false}
-          readiness: {enabled: false}
-          startup: {enabled: false}
-        command: ["sh", "-c", "while true; do echo collecting on $NODE; sleep 60; done"]
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+        command:
+          - "sh"
+          - "-c"
+          - "while true; do echo collecting on $NODE; sleep 60; done"
         env:
           NODE:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
         resources:
-          requests: {cpu: 5m, memory: 16Mi}
-          limits: {memory: 64Mi}
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            memory: 64Mi
   service:
     main:
       enabled: false

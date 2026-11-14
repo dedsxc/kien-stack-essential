@@ -5,18 +5,28 @@ app-template:
     containers:
       main:
         image:
-          repository: busybox   # your image
+          # your image
+          repository: busybox
           tag: "1.37"
           digest: ""
         # No port to check: turn off the default probes.
         probes:
-          liveness: {enabled: false}
-          readiness: {enabled: false}
-          startup: {enabled: false}
-        command: ["sh", "-c", "while true; do echo working; sleep 30; done"]
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+        command:
+          - "sh"
+          - "-c"
+          - "while true; do echo working; sleep 30; done"
         resources:
-          requests: {cpu: 5m, memory: 16Mi}
-          limits: {memory: 64Mi}
+          requests:
+            cpu: 5m
+            memory: 16Mi
+          limits:
+            memory: 64Mi
   service:
     main:
       enabled: false

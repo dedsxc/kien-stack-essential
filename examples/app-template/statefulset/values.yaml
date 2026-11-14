@@ -12,16 +12,25 @@ app-template:
     containers:
       main:
         image:
-          repository: valkey/valkey   # your image
+          # your image
+          repository: valkey/valkey
           tag: "8.1"
           digest: ""
-        args: ["--dir", "/data", "--appendonly", "yes"]
+        args:
+          - "--dir"
+          - "/data"
+          - "--appendonly"
+          - "yes"
         resources:
-          requests: {cpu: 10m, memory: 32Mi}
-          limits: {memory: 256Mi}
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 256Mi
   service:
     main:
       ports:
         tcp:
-          primary: true   # default probes check this port
+          # default probes check this port
+          primary: true
           port: 6379

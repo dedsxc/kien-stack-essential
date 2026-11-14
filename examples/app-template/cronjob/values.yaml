@@ -10,15 +10,22 @@ app-template:
     containers:
       main:
         image:
-          repository: busybox   # your image
+          # your image
+          repository: busybox
           tag: "1.37"
           digest: ""
         # No port to check: turn off the default probes.
         probes:
-          liveness: {enabled: false}
-          readiness: {enabled: false}
-          startup: {enabled: false}
-        command: ["sh", "-c", "echo nightly export done"]
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+        command:
+          - "sh"
+          - "-c"
+          - "echo nightly export done"
   service:
     main:
       enabled: false

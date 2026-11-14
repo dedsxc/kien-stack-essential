@@ -6,12 +6,16 @@ app-template:
     containers:
       main:
         image:
-          repository: nginx      # your image
+          # your image
+          repository: nginx
           tag: "1.27"
           digest: ""
         resources:
-          requests: {cpu: 10m, memory: 32Mi}
-          limits: {memory: 128Mi}
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 128Mi
   service:
     main:
       ports:
@@ -26,10 +30,13 @@ app-template:
           kind: Gateway
           name: traefik
           namespace: traefik
-          sectionName: https-frontend   # https-<name in gatewayHosts>
+          # https-<name in gatewayHosts>
+          sectionName: https-frontend
       rules:
         - backendRefs:
             - identifier: main
               port: 80
           matches:
-            - path: {type: PathPrefix, value: /}
+            - path:
+                type: PathPrefix
+                value: /
