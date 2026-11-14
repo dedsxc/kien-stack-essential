@@ -13,7 +13,7 @@ app-template:
           DB_PASSWORD:
             valueFrom:
               secretKeyRef:
-                name: backend-secrets
+                name: backend-secret   # created by externalSecret below: <release>-secret
                 key: db-password
         probes:
           readiness:
@@ -34,7 +34,7 @@ app-template:
       data:
         - secretKey: db-password
           remoteRef:
-            key: DB_PASSWORD
+            key: DB_PASSWORD   # secret name in your Infisical project/env (cluster.yaml), root path
   service:
     main:
       ports:
