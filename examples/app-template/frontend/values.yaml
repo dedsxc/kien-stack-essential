@@ -1,0 +1,34 @@
+# A website or SPA served over HTTPS at https://frontend.<domain>.
+# Also add "frontend" to global.gatewayHosts in cluster.yaml (one HTTPS listener + certificate).
+app-template:
+  controller:
+    replicas: 2
+    containers:
+      main:
+        image:
+          repository: nginx      # your image
+          tag: "1.27"
+        resources:
+          requests: {cpu: 10m, memory: 32Mi}
+          limits: {memory: 128Mi}
+  service:
+    main:
+      ports:
+        http:
+          port: 80
+  route:
+    main:
+      enabled: true
+      kind: HTTPRoute
+      parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: traefik
+          namespace: traefik
+          sectionName: https-frontend   # https-<name in gatewayHosts>
+      rules:
+        - backendRefs:
+            - identifier: main
+              port: 80
+          matches:
+            - path: {type: PathPrefix, value: /}

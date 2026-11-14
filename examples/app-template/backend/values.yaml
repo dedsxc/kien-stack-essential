@@ -1,0 +1,56 @@
+# An API at https://backend.<domain>, with a database password pulled from your secrets manager.
+# Needs global.secrets.provider: infisical in cluster.yaml (creates the ClusterSecretStore "infisical")
+# and "backend" in global.gatewayHosts.
+app-template:
+  controller:
+    containers:
+      main:
+        image:
+          repository: ghcr.io/stefanprodan/podinfo   # your image
+          tag: "6.7.1"
+        env:
+          PORT: "9898"
+          DB_PASSWORD:
+            valueFrom:
+              secretKeyRef:
+                name: backend-secrets
+                key: db-password
+        probes:
+          readiness:
+            enabled: true
+            type: HTTP
+            path: /readyz
+        resources:
+          requests: {cpu: 10m, memory: 32Mi}
+          limits: {memory: 256Mi}
+  # Synced from Infisical by External Secrets: never in Git.
+  externalSecret:
+    secret:
+      enabled: true
+      refreshInterval: 1h
+      secretStoreRef:
+        name: infisical
+        kind: ClusterSecretStore
+      data:
+        - secretKey: db-password
+          remoteRef:
+            key: DB_PASSWORD
+  service:
+    main:
+      ports:
+        http:
+          port: 9898
+  route:
+    main:
+      enabled: true
+      kind: HTTPRoute
+      parentRefs:
+        - group: gateway.networking.k8s.io
+          kind: Gateway
+          name: traefik
+          namespace: traefik
+          sectionName: https-backend
+      rules:
+        - backendRefs:
+            - identifier: main
+              port: 9898

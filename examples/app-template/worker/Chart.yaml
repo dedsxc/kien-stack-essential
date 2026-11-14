@@ -1,0 +1,9 @@
+# Example: background worker, no URL. Copy this folder to helm/apps/<your-app>, edit values.yaml, push.
+apiVersion: v2
+name: worker
+type: application
+version: 0.1.0
+dependencies:
+  - name: app-template
+    repository: oci://ghcr.io/dedsxc
+    version: 2.0.0
