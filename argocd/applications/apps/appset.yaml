@@ -48,12 +48,3 @@ spec:
         syncOptions:
           - CreateNamespace=true
           - ServerSideApply=true
-          - RespectIgnoreDifferences=true
-      # The API server fills defaults (status, apiVersion, kind) in StatefulSet volumeClaimTemplates.
-      ignoreDifferences:
-        - group: apps
-          kind: StatefulSet
-          jqPathExpressions:
-            - .spec.volumeClaimTemplates[]?.status
-            - .spec.volumeClaimTemplates[]?.apiVersion
-            - .spec.volumeClaimTemplates[]?.kind
