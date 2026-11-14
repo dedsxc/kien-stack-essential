@@ -1,0 +1,36 @@
+# A service that needs its own disk and a stable name (one PVC per replica).
+app-template:
+  controller:
+    type: statefulset
+    statefulset:
+      volumeClaimTemplates:
+        - name: data
+          accessMode: ReadWriteOnce
+          size: 1Gi
+          globalMounts:
+            - path: /data
+    containers:
+      main:
+        image:
+          # your image
+          repository: valkey/valkey
+          tag: "8.1"
+          digest: ""
+        args:
+          - "--dir"
+          - "/data"
+          - "--appendonly"
+          - "yes"
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 256Mi
+  service:
+    main:
+      ports:
+        tcp:
+          # default probes check this port
+          primary: true
+          port: 6379

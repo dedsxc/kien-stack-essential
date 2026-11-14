@@ -1,0 +1,30 @@
+# A one-off task: database migration, import. Runs once until it succeeds.
+# ArgoCD runs it on each sync where the Job spec changed (bump the image tag to run again).
+app-template:
+  controller:
+    type: job
+    job:
+      backoffLimit: 3
+      ttlSecondsAfterFinished: 86400
+    containers:
+      main:
+        image:
+          # your migration image
+          repository: busybox
+          tag: "1.37"
+          digest: ""
+        # No port to check: turn off the default probes.
+        probes:
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+        command:
+          - "sh"
+          - "-c"
+          - "echo migration done"
+  service:
+    main:
+      enabled: false

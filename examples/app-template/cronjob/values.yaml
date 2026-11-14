@@ -1,0 +1,31 @@
+# A scheduled task: nightly export, cleanup, report. Runs at 03:00 every day.
+app-template:
+  controller:
+    type: cronjob
+    cronjob:
+      schedule: "0 3 * * *"
+      concurrencyPolicy: Forbid
+      successfulJobsHistory: 1
+      failedJobsHistory: 1
+    containers:
+      main:
+        image:
+          # your image
+          repository: busybox
+          tag: "1.37"
+          digest: ""
+        # No port to check: turn off the default probes.
+        probes:
+          liveness:
+            enabled: false
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+        command:
+          - "sh"
+          - "-c"
+          - "echo nightly export done"
+  service:
+    main:
+      enabled: false
